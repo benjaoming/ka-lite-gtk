@@ -8,6 +8,10 @@ kalite_gtk
 .. image:: https://img.shields.io/pypi/v/ka-lite-gtk.svg
         :target: https://pypi.python.org/pypi/ka-lite-gtk
 
+.. image:: https://readthedocs.org/projects/ka-lite-gtk/badge/?version=latest
+        :target: https://readthedocs.org/projects/ka-lite-gtk/?badge=latest
+        :alt: Documentation Status
+
 
 User interface for KA Lite (GTK3)
 
