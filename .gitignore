@@ -9,6 +9,7 @@ debian/*.debhelper
 debian/*.log
 debian/ka-lite-gtk.triggers
 debian/ka-lite-gtk.substvars
+debian/files
 
 # Packages
 *.egg
