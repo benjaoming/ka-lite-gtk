@@ -3,6 +3,9 @@
 # C extensions
 *.so
 
+# Backup files
+*~
+
 # DPKG
 debian/ka-lite-gtk/
 debian/*.debhelper

@@ -119,7 +119,7 @@ def run_kalite_command(cmd):
         env=env
     )
     # decode() necessary to convert streams from byte to str
-    return map(lambda x: x.decode(), p.communicate())
+    return map(lambda x: x.decode(), p.communicate()) + [p.returncode]
 
 
 def stream_kalite_command(cmd):
@@ -145,8 +145,12 @@ def stream_kalite_command(cmd):
         env=env
     )
     for line in iter(lambda: p.stdout.readline().decode(), ''):
-        yield line, None
-    yield None, p.stderr.read().decode() if p.stderr is not None else None
+        yield line, None, None
+    yield (
+        None,
+        p.stderr.read().decode() if p.stderr is not None else None,
+        p.returncode
+    )
 
 
 def install():
@@ -175,12 +179,20 @@ def stop():
         yield val
 
 
+def diagnose():
+    """
+    Blocking:
+    Runs the diagnose command
+    """
+    return run_kalite_command(get_command('diagnose'))
+
+
 def status():
     """
     Blocking:
     Fetches server's current status as a string
     """
-    __, err = run_kalite_command(get_command('status'))
+    __, err, __ = run_kalite_command(get_command('status'))
     return err
 
 
