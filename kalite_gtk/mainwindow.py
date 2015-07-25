@@ -59,22 +59,22 @@ class Handler:
 
     @run_async
     def on_start_button_clicked(self, button):
-        self.mainwindow.log_message("Starting KA Lite...")
+        self.log_message("Starting KA Lite...")
         for stdout, stderr in cli.start():
             if stdout:
-                GLib.idle_add(self.mainwindow.log_message, stdout)
+                self.log_message(stdout)
         if stderr:
-            GLib.idle_add(self.mainwindow.log_message, stderr)
+            self.log_message(stderr)
         GLib.idle_add(self.mainwindow.update_status)
-    
+
     @run_async
     def on_stop_button_clicked(self, button):
-        self.mainwindow.log_message("Stopping KA Lite...")
+        self.log_message("Stopping KA Lite...\n")
         for stdout, stderr in cli.stop():
             if stdout:
-                GLib.idle_add(self.mainwindow.log_message, stdout)
+                self.log_message(stdout)
         if stderr:
-            GLib.idle_add(self.mainwindow.log_message, stderr)
+            self.log_message(stderr)
         GLib.idle_add(self.mainwindow.update_status)
 
     def on_main_notebook_change_current_page(self, *args, **kwargs):
@@ -85,6 +85,10 @@ class Handler:
         We should make individual handlers for widgets, but this is easier...
         """
         cli.save_settings()
+
+    def log_message(self, msg):
+        """Logs a message using idle callaback"""
+        GLib.idle_add(self.mainwindow.log_message, msg)
 
 
 class MainWindow:
@@ -117,32 +121,32 @@ class MainWindow:
             Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 1))
         self.diagnose_textview.override_color(
             Gtk.StateFlags.NORMAL, Gdk.RGBA(1, 1, 1, 1))
-        
+
         self.set_from_settings()
-        
+
         GLib.idle_add(self.update_status)
         GLib.timeout_add(60 * 1000, lambda: self.update_status or True)
-        
+
         self.status_entry = self.builder.get_object('status_label')
 
     def log_message(self, msg):
         self.log.insert_at_cursor(msg)
-    
+
     def set_from_settings(self):
         default_user_radio_button = self.builder.get_object('radiobutton_user_default')
         label = default_user_radio_button.get_label()
         label = label.replace('{default}', cli.DEFAULT_USER)
         default_user_radio_button.set_label(label)
-        
+
         if cli.DEFAULT_USER != cli.settings['user']:
             self.builder.get_object('username_entry').set_text(cli.settings['user'])
             self.builder.get_object('radiobutton_username').set_active(True)
-    
+
     @run_async
     def update_status(self):
         GLib.idle_add(self.set_status, "Updating status...")
         GLib.idle_add(self.set_status, "Server status: " + (cli.status() or "Error fetching status").split("\n")[0])
-    
+
     def set_status(self, status):
         self.status_entry.set_label(status)
 

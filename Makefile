@@ -5,7 +5,7 @@ help:
 	@echo "clean-build - remove build artifacts"
 	@echo "clean-pyc - remove Python file artifacts"
 	@echo "clean-test - remove test and coverage artifacts"
-	@echo "lint - check style with flake8"
+	@echo "lint - check style with pep8"
 	@echo "test - run tests quickly with the default Python"
 	@echo "test-all - run tests on every Python version with tox"
 	@echo "coverage - check code coverage quickly with the default Python"
@@ -35,7 +35,7 @@ clean-test:
 	rm -fr htmlcov/
 
 lint:
-	flake8 ka-lite-gtk tests
+	pep8 kalite_gtk tests
 
 test:
 	python setup.py test
@@ -44,7 +44,7 @@ test-all:
 	tox
 
 coverage:
-	coverage run --source ka-lite-gtk setup.py test
+	coverage run --source kalite_gtk setup.py test
 	coverage report -m
 	coverage html
 	open htmlcov/index.html

@@ -1,3 +1,7 @@
+"""
+CLI for kalite
+"""
+
 from __future__ import print_function
 from __future__ import unicode_literals
 
@@ -100,9 +104,9 @@ def run_kalite_command(cmd):
     Blocking:
     Uses the current UI settings to run a command and returns
     stdin, stdout
-    
+
     Example:
-    
+
     run_kalite_command("start --port=7007")
     """
     env = os.environ.copy()
@@ -120,15 +124,15 @@ def run_kalite_command(cmd):
 def stream_kalite_command(cmd):
     """
     Generator that yields for every line of stdout
-    
+
     Finally, returns stderr
-    
+
     Example:
-    
+
     for stdout, stderr in stream_kalite_command("start --port=7007"):
         print(stdout)
     print(stderr)
-    
+
     """
     env = os.environ.copy()
     env['KALITE_HOME'] = settings['home']
@@ -139,9 +143,7 @@ def stream_kalite_command(cmd):
         stderr=subprocess.PIPE,
         env=env
     )
-    for line in iter(p.stdout.readline, None):
-        if line is None:
-            break
+    for line in iter(p.stdout.readline, ''):
         yield line, None
     yield None, p.stderr.read() if p.stderr is not None else None
 
@@ -184,6 +186,6 @@ def status():
 def save_settings():
     # Write settings to ka-lite-gtk settings file
     json.dump(settings, open(KALITE_GTK_SETTINGS_FILE, 'w'))
-    
+
     # Write to debian settings if applicable
     pass

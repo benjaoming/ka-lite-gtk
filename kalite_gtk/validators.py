@@ -17,7 +17,7 @@ def validator(func):
             if none_if_invalid:
                 return None
             raise
-    
+
     return inline
 
 
@@ -28,7 +28,7 @@ def username(uname):
         pwd.getpwnam(uname)
     except KeyError:
         raise ValidationError("Username does not exist")
-    
+
     return uname
 
 
