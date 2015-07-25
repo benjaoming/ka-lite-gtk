@@ -38,10 +38,11 @@ class PyTest(TestCommand):
         errno = pytest.main(self.pytest_args)
         sys.exit(errno)
 
+import kalite_gtk
 
 setup(
     name='ka-lite-gtk',
-    version='0.1.0',
+    version=kalite_gtk.__version__,
     description="User interface for KA Lite (GTK3)",
     long_description=readme + '\n\n' + history,
     author="Foundation for Learning Equality",
