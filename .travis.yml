@@ -4,10 +4,14 @@ language: python
 
 python:
   - "3.4"
-  - "3.3"
   - "2.7"
-  - "2.6"
-  - "pypy"
+
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -qq python3-gi gir1.2-gtk-3.0
+
+virtualenv:
+  system_site_packages: true
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: pip install -r requirements.txt

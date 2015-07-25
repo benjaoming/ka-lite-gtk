@@ -15,7 +15,7 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read().replace('.. :changelog:', '')
 
 requirements = [
-#    'ka-lite',  # We do not have a way to specify ka-lite OR ka-lite-static
+    # 'ka-lite',  # We do not have a way to specify ka-lite OR ka-lite-static
 ]
 
 test_requirements = [

@@ -10,7 +10,7 @@ Tests for `kalite_gtk` module.
 
 import unittest
 
-#from kalite_gtk import ka-lite-gtk
+from kalite_gtk import mainwindow
 
 
 class TestKaliteGTK(unittest.TestCase):
