@@ -1,5 +1,6 @@
-ka-lite-gtk (0.1.0-1) precise; urgency=low
+ka-lite-gtk (0.1.0) precise; urgency=low
 
-  * source package automatically created by stdeb 0.8.5
+  * ba5e06c copyright and change package name
 
- -- Foundation for Learning Equality <benjamin@learningequality.org>  Sat, 25 Jul 2015 18:32:18 +0200
+
+ -- Benjamin Bach <benjamin@learningequality.org>  Sat, 25 Jul 2015 21:16:43 +0000

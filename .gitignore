@@ -3,6 +3,13 @@
 # C extensions
 *.so
 
+# DPKG
+debian/ka-lite-gtk/
+debian/*.debhelper
+debian/*.log
+debian/ka-lite-gtk.triggers
+debian/ka-lite-gtk.substvars
+
 # Packages
 *.egg
 *.egg-info

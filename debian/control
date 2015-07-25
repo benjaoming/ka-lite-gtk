@@ -9,7 +9,7 @@ Standards-Version: 3.9.1
 
 Package: ka-lite-gtk
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}
+Depends: ${misc:Depends}, ${python:Depends}, gir1.2-gtk-3.0, gtk+3.0, python-gi
 Description: Control Panel for KA Lite (GTK3)
 Homepage: https://learningequality.org/ka-lite/
 
