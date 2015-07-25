@@ -15,13 +15,16 @@ kalite_gtk
 
 User interface for KA Lite (GTK3)
 
-* Free software: BSD license
+* Free software: MIT license
 * Documentation: https://ka-lite-gtk.readthedocs.org.
+
 
 Features
 --------
 
-* TODO
+* Control the KA Lite server from a simple Control Panel
+* Supports a multi-user environment, i.e. User A controls User Bs server.
+* Notification area icon (TODO)
 
 
 Development
