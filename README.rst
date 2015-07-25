@@ -2,7 +2,7 @@
 kalite_gtk
 ===============================
 
-.. image:: https://img.shields.io/travis/learningequality/ka-lite-gtk.svg
+.. image:: https://api.travis-ci.org/benjaoming/ka-lite-gtk.svg
         :target: https://travis-ci.org/learningequality/ka-lite-gtk
 
 .. image:: https://img.shields.io/pypi/v/ka-lite-gtk.svg
