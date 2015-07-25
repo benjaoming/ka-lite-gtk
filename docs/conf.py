@@ -55,7 +55,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'kalite_gtk'
+project = u'ka-lite-gtk'
 copyright = u'2015, Foundation for Learning Equality'
 
 # The version info for the project you're documenting, acts as replacement
@@ -240,7 +240,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'kalite_gtk',
-     u'kalite_gtk Documentation',
+     u'ka-lite-gtk Documentation',
      [u'Foundation for Learning Equality'], 1)
 ]
 
@@ -257,8 +257,8 @@ texinfo_documents = [
     ('index', 'kalite_gtk',
      u'kalite_gtk Documentation',
      u'Foundation for Learning Equality',
-     'kalite_gtk',
-     'One line description of project.',
+     'ka-lite-gtk',
+     'KA Lite user interface (GTK)',
      'Miscellaneous'),
 ]
 
