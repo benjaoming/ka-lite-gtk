@@ -1,5 +1,5 @@
 ===============================
-kalite_gtk
+KA Lite Control Panel (GTK3)
 ===============================
 
 .. image:: https://api.travis-ci.org/benjaoming/ka-lite-gtk.svg
@@ -13,7 +13,7 @@ kalite_gtk
         :alt: Documentation Status
 
 
-User interface for KA Lite (GTK3)
+User interface for KA Lite server control (GTK3)
 
 * Free software: MIT license
 * Documentation: https://ka-lite-gtk.readthedocs.org.
