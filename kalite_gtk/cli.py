@@ -91,11 +91,11 @@ def get_command(kalite_command):
     return [settings['command']] + kalite_command.split(" ")
 
 
-def sudo_needed(cmd):
+def sudo_needed(cmd, no_su=False):
     """Decorator indicating that sudo access is needed before running
     run_kalite_command or stream_kalite_command"""
     if settings['user'] != getpass.getuser():
-        return shlex.split(SUDO_COMMAND.format(username=settings['user'])) + cmd
+        return shlex.split(SUDO_COMMAND.format(username=settings['user'] if not no_su else "root")) + cmd
     return cmd
 
 
@@ -153,12 +153,24 @@ def stream_kalite_command(cmd):
     )
 
 
+def has_init_d():
+    return os.path.isfile(DEBIAN_INIT_SCRIPT)
+
+
+def is_installed():
+    return any('ka-lite' in x for x in os.listdir('/etc/rc3.d'))
+
+
 def install():
-    pass
+    return run_kalite_command(
+        sudo_needed(shlex.split("update-rc.d ka-lite defaults"), no_su=True)
+    )
 
 
 def remove():
-    pass
+    return run_kalite_command(
+        sudo_needed(shlex.split("update-rc.d -f ka-lite remove"), no_su=True)
+    )
 
 
 def start():

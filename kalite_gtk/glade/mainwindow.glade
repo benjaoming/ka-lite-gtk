@@ -217,11 +217,12 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="button3">
+                          <object class="GtkButton" id="startup_service_button">
                             <property name="label" translatable="yes">Install as startup service</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <signal name="clicked" handler="on_startup_service_button_clicked" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">True</property>

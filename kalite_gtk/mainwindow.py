@@ -68,7 +68,7 @@ class Handler:
 
     @run_async
     def on_stop_button_clicked(self, button):
-        GLib.idle_add(self.mainwindow.stop_button.set_sensitive, False)
+        GLib.idle_add(button.set_sensitive, False)
         self.log_message("Stopping KA Lite...\n")
         for stdout, stderr, returncode in cli.stop():
             if stdout:
@@ -77,12 +77,12 @@ class Handler:
             self.log_message("Failed to stop\n")
         if stderr:
             self.log_message(stderr)
-        GLib.idle_add(self.mainwindow.stop_button.set_sensitive, True)
+        GLib.idle_add(button.set_sensitive, True)
         GLib.idle_add(self.mainwindow.update_status)
 
     @run_async
     def on_diagnose_button_clicked(self, button):
-        GLib.idle_add(self.mainwindow.diagnose_button.set_sensitive, False)
+        GLib.idle_add(button.set_sensitive, False)
         start_iter = self.mainwindow.diagnostics.get_start_iter()
         end_iter = self.mainwindow.diagnostics.get_end_iter()
         GLib.idle_add(lambda: self.mainwindow.diagnostics.delete(start_iter, end_iter))
@@ -93,7 +93,31 @@ class Handler:
             GLib.idle_add(self.mainwindow.diagnostics_message, stderr)
         if returncode:
             GLib.idle_add(self.mainwindow.set_status, "Failed to diagnose!")
-        GLib.idle_add(self.mainwindow.diagnose_button.set_sensitive, True)
+        GLib.idle_add(button.set_sensitive, True)
+
+    @run_async
+    def on_startup_service_button_clicked(self, button):
+        GLib.idle_add(button.set_sensitive, False)
+        if cli.is_installed():
+            self.log_message("Removing startup service\n")
+            stdout, stderr, returncode = cli.remove()
+            if stdout:
+                GLib.idle_add(self.log_message, stdout)
+            if stderr:
+                GLib.idle_add(self.log_message, stderr)
+            if returncode:
+                GLib.idle_add(self.log_message, "Failed to remove startup service\n")
+        else:
+            self.log_message("Installing startup service\n")
+            stdout, stderr, returncode = cli.install()
+            if stdout:
+                GLib.idle_add(self.log_message, stdout)
+            if stderr:
+                GLib.idle_add(self.log_message, stderr)
+            if returncode:
+                GLib.idle_add(self.log_message, "Failed to install startup service\n")
+        GLib.idle_add(self.mainwindow.set_from_settings)
+        GLib.idle_add(button.set_sensitive, True)
 
     def on_main_notebook_change_current_page(self, *args, **kwargs):
         print(args, kwargs)
@@ -135,6 +159,7 @@ class MainWindow:
         self.start_button = self.builder.get_object('start_button')
         self.stop_button = self.builder.get_object('stop_button')
         self.diagnose_button = self.builder.get_object('diagnose_button')
+        self.startup_service_button = self.builder.get_object('startup_service_button')
 
         # Auto-connect handlers defined in mainwindow.glade
         self.builder.connect_signals(Handler(self))
@@ -186,6 +211,13 @@ class MainWindow:
         if cli.DEFAULT_USER != cli.settings['user']:
             self.username_entry.set_text(cli.settings['user'])
             self.username_radiobutton.set_active(True)
+
+        self.startup_service_button.set_sensitive(cli.has_init_d())
+        if cli.has_init_d():
+            if cli.is_installed():
+                self.startup_service_button.set_label("Remove startup service")
+            else:
+                self.startup_service_button.set_label("Install startup service")
 
     @run_async
     def update_status(self):
