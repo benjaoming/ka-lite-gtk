@@ -1,5 +1,5 @@
-ka-lite-gtk (0.1.0-1) unstable; urgency=low
+ka-lite-gtk (0.1.0-1) precise; urgency=low
 
   * source package automatically created by stdeb 0.8.5
 
- -- Foundation for Learning Equality <info@learningequality.org>  Sat, 25 Jul 2015 18:32:18 +0200
+ -- Foundation for Learning Equality <benjamin@learningequality.org>  Sat, 25 Jul 2015 18:32:18 +0200
