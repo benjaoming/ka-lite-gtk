@@ -11,13 +11,13 @@ import os
 import re
 import json
 import pwd
+import shlex
 import subprocess
 
 from distutils.spawn import find_executable
 
 from .exceptions import ValidationError
 from . import validators
-import shlex
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +118,8 @@ def run_kalite_command(cmd):
         stderr=subprocess.PIPE,
         env=env
     )
-    return p.communicate()
+    # decode() necessary to convert streams from byte to str
+    return map(lambda x: x.decode(), p.communicate())
 
 
 def stream_kalite_command(cmd):
@@ -143,9 +144,9 @@ def stream_kalite_command(cmd):
         stderr=subprocess.PIPE,
         env=env
     )
-    for line in iter(p.stdout.readline, ''):
+    for line in iter(lambda: p.stdout.readline().decode(), ''):
         yield line, None
-    yield None, p.stderr.read() if p.stderr is not None else None
+    yield None, p.stderr.read().decode() if p.stderr is not None else None
 
 
 def install():
