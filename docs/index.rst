@@ -11,12 +11,15 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   readme
    installation
    usage
    contributing
    authors
    history
+
+
+.. include:: ../README.rst
+
 
 Indices and tables
 ==================
