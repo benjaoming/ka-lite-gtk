@@ -30,6 +30,11 @@ Features
 Development
 -----------
 
-Run::
+Run directly from source::
 
+    python kalite_gtk --debug
+
+Installing in a as editable mode and running directly::
+
+    pip install -e .
     ka-lite-gtk --debug
