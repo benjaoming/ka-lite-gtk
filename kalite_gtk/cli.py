@@ -37,7 +37,12 @@ DEBIAN_INIT_SCRIPT = '/etc/init.d/ka-lite'
 DEBIAN_USERNAME_FILE = '/etc/ka-lite/username'
 DEBIAN_OPTIONS_FILE = '/etc/ka-lite/server_options'
 
-SUDO_COMMAND = 'pkexec --user {username}' if find_executable('pkexec') else 'gksudo -u {username}'
+if find_executable('pkexec'):
+    SU_COMMAND = 'pkexec --user {username}'
+    SUDO_COMMAND = 'pkexec'
+else:
+    SU_COMMAND = 'gksudo -u {username}'
+    SUDO_COMMAND = 'gksudo'
 
 # KA Lite Debian convention
 # Set new default values from debian system files
@@ -60,7 +65,11 @@ if os.path.isfile(DEBIAN_USERNAME_FILE):
             logger.error('Non-existing username in {}'.format(DEBIAN_USERNAME_FILE))
 
 
-DEFAULT_HOME = os.path.join(pwd.getpwnam(DEFAULT_USER).pw_dir, '.kalite')
+def get_kalite_home(user):
+    return os.path.join(pwd.getpwnam(user).pw_dir, '.kalite')
+
+
+DEFAULT_HOME = get_kalite_home(DEFAULT_USER)
 
 
 # These are the settings. They are subject to change at load time by
@@ -68,7 +77,7 @@ DEFAULT_HOME = os.path.join(pwd.getpwnam(DEFAULT_USER).pw_dir, '.kalite')
 settings = {
     'user': DEFAULT_USER,
     'command': find_executable('kalite'),
-    'content_root': os.path.expanduser(os.path.join('~', '.kalite')),
+    'content_root': os.path.join(DEFAULT_HOME, 'content'),
     'port': DEFAULT_PORT,
     'home': DEFAULT_HOME,
 }
@@ -83,6 +92,12 @@ if os.path.isfile(KALITE_GTK_SETTINGS_FILE):
                 settings[k] = validate[k](v) if k in validate else v
             except ValidationError:
                 logger.error("Illegal value in {} for {}".format(KALITE_GTK_SETTINGS_FILE, k))
+        # Update the home folder if it wasn't specified
+        if 'home' not in loaded_settings:
+            settings['home'] = get_kalite_home(settings['user'])
+        if 'content_root' not in loaded_settings:
+            print("SETTING CONTENT_ROOT")
+            settings['content_root'] = os.path.join(settings['home'], 'content')
     except ValueError:
         logger.error("Parsing error in {}".format(KALITE_GTK_SETTINGS_FILE))
 
@@ -91,15 +106,21 @@ def get_command(kalite_command):
     return [settings['command']] + kalite_command.split(" ")
 
 
-def sudo_needed(cmd, no_su=False):
+def conditional_sudo(cmd, no_su=False):
     """Decorator indicating that sudo access is needed before running
     run_kalite_command or stream_kalite_command"""
     if settings['user'] != getpass.getuser():
-        return shlex.split(SUDO_COMMAND.format(username=settings['user'] if not no_su else "root")) + cmd
+        return shlex.split(SU_COMMAND.format(username=settings['user'])) + cmd
     return cmd
 
 
-def run_kalite_command(cmd):
+def sudo(cmd, no_su=False):
+    """Decorator indicating that sudo access is needed before running
+    run_kalite_command or stream_kalite_command"""
+    return shlex.split(SUDO_COMMAND) + cmd
+
+
+def run_kalite_command(cmd, shell=False):
     """
     Blocking:
     Uses the current UI settings to run a command and returns
@@ -116,13 +137,14 @@ def run_kalite_command(cmd):
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        env=env
+        env=env,
+        shell=shell
     )
     # decode() necessary to convert streams from byte to str
-    return map(lambda x: x.decode(), p.communicate()) + [p.returncode]
+    return list(map(lambda x: x.decode(), p.communicate())) + [p.returncode]
 
 
-def stream_kalite_command(cmd):
+def stream_kalite_command(cmd, shell=False):
     """
     Generator that yields for every line of stdout
 
@@ -142,7 +164,8 @@ def stream_kalite_command(cmd):
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
-        env=env
+        env=env,
+        shell=shell
     )
     for line in iter(lambda: p.stdout.readline().decode(), ''):
         yield line, None, None
@@ -163,13 +186,17 @@ def is_installed():
 
 def install():
     return run_kalite_command(
-        sudo_needed(shlex.split("update-rc.d ka-lite defaults"), no_su=True)
+        sudo([
+            "bash".encode('ascii'),
+            "-c".encode('ascii'),
+            "echo {username} > /etc/ka-lite/username && update-rc.d ka-lite defaults".format(username=settings['user']).encode('ascii')
+        ])
     )
 
 
 def remove():
     return run_kalite_command(
-        sudo_needed(shlex.split("update-rc.d -f ka-lite remove"), no_su=True)
+        sudo(shlex.split("update-rc.d -f ka-lite remove"))
     )
 
 
@@ -178,7 +205,7 @@ def start():
     Streaming:
     Starts the server
     """
-    for val in stream_kalite_command(sudo_needed(get_command('start'))):
+    for val in stream_kalite_command(conditional_sudo(get_command('start'))):
         yield val
 
 
@@ -187,7 +214,7 @@ def stop():
     Streaming:
     Stops the server
     """
-    for val in stream_kalite_command(sudo_needed(get_command('stop'))):
+    for val in stream_kalite_command(conditional_sudo(get_command('stop'))):
         yield val
 
 

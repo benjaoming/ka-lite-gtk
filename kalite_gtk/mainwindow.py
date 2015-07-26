@@ -6,6 +6,8 @@ from pkg_resources import resource_filename  # @UnresolvedImport
 import logging
 
 from . import cli
+from kalite_gtk import validators
+from kalite_gtk.exceptions import ValidationError
 
 
 logger = logging.getLogger(__name__)
@@ -102,25 +104,38 @@ class Handler:
             self.log_message("Removing startup service\n")
             stdout, stderr, returncode = cli.remove()
             if stdout:
-                GLib.idle_add(self.log_message, stdout)
+                self.log_message(stdout)
             if stderr:
-                GLib.idle_add(self.log_message, stderr)
+                self.log_message(stderr)
             if returncode:
-                GLib.idle_add(self.log_message, "Failed to remove startup service\n")
+                self.log_message("Failed to remove startup service\n")
         else:
             self.log_message("Installing startup service\n")
             stdout, stderr, returncode = cli.install()
             if stdout:
-                GLib.idle_add(self.log_message, stdout)
+                self.log_message(stdout)
             if stderr:
-                GLib.idle_add(self.log_message, stderr)
+                self.log_message(stderr)
             if returncode:
-                GLib.idle_add(self.log_message, "Failed to install startup service\n")
+                self.log_message("Failed to install startup service\n")
         GLib.idle_add(self.mainwindow.set_from_settings)
         GLib.idle_add(button.set_sensitive, True)
 
-    def on_main_notebook_change_current_page(self, *args, **kwargs):
-        print(args, kwargs)
+    def on_username_entry_changed(self, entry):
+        value = entry.get_text()
+        if not value:
+            self.mainwindow.default_user_radio_button.set_active(True)
+            return
+        self.mainwindow.username_radiobutton.set_active(True)
+        try:
+            value = validators.username(value)
+            self.mainwindow.username_validation_label.set_label('')
+            cli.settings['user'] = value
+            cli.save_settings()
+        except ValidationError:
+            self.mainwindow.username_validation_label.set_label(
+                'Username in valid!'
+            )
 
     def settings_changed(self, widget):
         """
@@ -160,6 +175,11 @@ class MainWindow:
         self.stop_button = self.builder.get_object('stop_button')
         self.diagnose_button = self.builder.get_object('diagnose_button')
         self.startup_service_button = self.builder.get_object('startup_service_button')
+        self.username_validation_label = self.builder.get_object('username_validation_label')
+        self.start_stop_instructions_label = self.builder.get_object('start_stop_instructions_label')
+
+        # Save old label so we can continue to replace text
+        self.start_stop_instructions_label_original_text = self.start_stop_instructions_label.get_label()
 
         # Auto-connect handlers defined in mainwindow.glade
         self.builder.connect_signals(Handler(self))
@@ -200,6 +220,12 @@ class MainWindow:
         self.log.insert_at_cursor(msg)
 
     def set_from_settings(self):
+        # Insert username of currently running user
+        label = self.start_stop_instructions_label_original_text.replace(
+            '{username}', cli.settings['user']
+        )
+        self.start_stop_instructions_label.set_label(label)
+
         label = self.default_user_radio_button.get_label()
         label = label.replace('{default}', cli.DEFAULT_USER)
         self.default_user_radio_button.set_label(label)
@@ -211,6 +237,10 @@ class MainWindow:
         if cli.DEFAULT_USER != cli.settings['user']:
             self.username_entry.set_text(cli.settings['user'])
             self.username_radiobutton.set_active(True)
+            self.default_user_radio_button.set_active(False)
+        else:
+            self.username_radiobutton.set_active(False)
+            self.default_user_radio_button.set_active(True)
 
         self.startup_service_button.set_sensitive(cli.has_init_d())
         if cli.has_init_d():

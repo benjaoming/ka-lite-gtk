@@ -35,6 +35,6 @@ def username(uname):
 @validator
 def port(p):
     p = str(p)
-    if not p.isnumeric():
+    if not p.isdigit():
         raise ValidationError("Port '{}' is not a number".format(p))
     return p
