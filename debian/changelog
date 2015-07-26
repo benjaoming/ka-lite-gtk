@@ -1,3 +1,9 @@
+ka-lite-gtk (0.2a2ubuntu1) precise; urgency=medium
+
+  * New alpha
+
+ -- Benjamin Bach <benjamin@learningequality.org>  Sun, 26 Jul 2015 03:40:53 +0200
+
 ka-lite-gtk (0.2a1ubuntu1) precise; urgency=medium
 
   * New upstream release
