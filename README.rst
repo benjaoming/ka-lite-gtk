@@ -5,7 +5,7 @@ KA Lite Control Panel (GTK3)
 .. image:: https://api.travis-ci.org/benjaoming/ka-lite-gtk.svg
         :target: https://travis-ci.org/learningequality/ka-lite-gtk
 
-.. image:: https://img.shields.io/pypi/v/ka-lite-gtk.svg
+.. image:: https://badge.fury.io/py/ka-lite-gtk.svg
         :target: https://pypi.python.org/pypi/ka-lite-gtk
 
 .. image:: https://readthedocs.org/projects/ka-lite-gtk/badge/?version=latest
