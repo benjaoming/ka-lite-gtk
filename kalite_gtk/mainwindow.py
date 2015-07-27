@@ -49,6 +49,9 @@ def run_async(func):
 class Handler:
 
     def __init__(self, mainwindow):
+        # Store new settings here and use for sync / reset
+        # This only includes valid settings
+        self.unsaved_settings = {}
         self.mainwindow = mainwindow
 
     def on_delete_window(self, *args):
@@ -57,7 +60,7 @@ class Handler:
     @run_async
     def on_start_button_clicked(self, button):
         self.log_message("Starting KA Lite...\n")
-        GLib.idle_add(self.mainwindow.start_button.set_sensitive, False)
+        GLib.idle_add(button.set_sensitive, False)
         for stdout, stderr, returncode in cli.start():
             if stdout:
                 self.log_message(stdout)
@@ -65,7 +68,7 @@ class Handler:
             self.log_message("KA Lite started!\n")
         elif stderr:
             self.log_message(stderr)
-        GLib.idle_add(self.mainwindow.start_button.set_sensitive, True)
+        GLib.idle_add(button.set_sensitive, True)
         GLib.idle_add(self.mainwindow.update_status)
 
     @run_async
@@ -109,6 +112,7 @@ class Handler:
                 self.log_message(stderr)
             if returncode:
                 self.log_message("Failed to remove startup service\n")
+            self.log_message("Removed!\n")
         else:
             self.log_message("Installing startup service\n")
             stdout, stderr, returncode = cli.install()
@@ -118,7 +122,8 @@ class Handler:
                 self.log_message(stderr)
             if returncode:
                 self.log_message("Failed to install startup service\n")
-        GLib.idle_add(self.mainwindow.set_from_settings)
+            self.log_message("Installed!\n")
+        GLib.idle_add(self.mainwindow.set_from_settngs)
         GLib.idle_add(button.set_sensitive, True)
 
     def on_username_entry_changed(self, entry):
@@ -129,22 +134,44 @@ class Handler:
         self.mainwindow.username_radiobutton.set_active(True)
         try:
             value = validators.username(value)
-            self.mainwindow.username_validation_label.set_label('')
-            cli.settings['user'] = value
-            cli.save_settings()
+            self.unsaved_settings['user'] = value
+            self.settings_changed()
         except ValidationError:
-            self.mainwindow.username_validation_label.set_label(
-                'Username in valid!'
+            self.mainwindow.settings_feedback_label.set_label(
+                'Username invalid'
             )
 
-    def settings_changed(self, widget):
+    @run_async
+    def on_save_and_restart_button_clicked(self, button):
+        cli.save_settings()
+        GLib.idle_add(button.set_sensitive, False)
+        GLib.idle_add(
+            self.mainwindow.settings_feedback_label.set_label,
+            'Settings saved, restarting server...'
+        )
+        self.log_message("Restarting KA Lite...\n")
+        GLib.idle_add(self.mainwindow.start_button.set_sensitive, False)
+        for stdout, stderr, returncode in cli.start():
+            if stdout:
+                self.log_message(stdout)
+        if returncode == 0:
+            self.log_message("KA Lite restarted!\n")
+        elif stderr:
+            self.log_message(stderr)
+        GLib.idle_add(button.set_sensitive, False)
+
+    def settings_changed(self):
         """
         We should make individual handlers for widgets, but this is easier...
         """
+        cli.settings.update(self.unsaved_settings)
         cli.save_settings()
+        self.mainwindow.settings_feedback_label.set_label(
+            'Settings OK - they will be saved and take effect when you restart the server!'
+        )
 
     def log_message(self, msg):
-        """Logs a message using idle callaback"""
+        """Logs a message using idle callback"""
         GLib.idle_add(self.mainwindow.log_message, msg)
 
 
@@ -175,8 +202,9 @@ class MainWindow:
         self.stop_button = self.builder.get_object('stop_button')
         self.diagnose_button = self.builder.get_object('diagnose_button')
         self.startup_service_button = self.builder.get_object('startup_service_button')
-        self.username_validation_label = self.builder.get_object('username_validation_label')
+        self.settings_feedback_label = self.builder.get_object('settings_feedback_label')
         self.start_stop_instructions_label = self.builder.get_object('start_stop_instructions_label')
+        self.save_and_restart_button = self.builder.get_object('save_and_restart_button')
 
         # Save old label so we can continue to replace text
         self.start_stop_instructions_label_original_text = self.start_stop_instructions_label.get_label()
@@ -206,12 +234,15 @@ class MainWindow:
         self.diagnose_textview.override_background_color(
             Gtk.StateFlags.SELECTED, Gdk.RGBA(0.7, 1, 0.5, 1))
 
+        # Load settings into widgets
         self.set_from_settings()
 
+        # Show widgets
+        self.window.show_all()
+
+        # Update status bar
         GLib.idle_add(self.update_status)
         GLib.timeout_add(60 * 1000, lambda: self.update_status or True)
-
-        self.window.show_all()
 
     def diagnostics_message(self, msg):
         self.diagnostics.insert_at_cursor(msg)
@@ -245,9 +276,9 @@ class MainWindow:
         self.startup_service_button.set_sensitive(cli.has_init_d())
         if cli.has_init_d():
             if cli.is_installed():
-                self.startup_service_button.set_label("Remove startup service")
+                self.startup_service_button.set_label("Remove system service")
             else:
-                self.startup_service_button.set_label("Install startup service")
+                self.startup_service_button.set_label("Install system service")
 
     @run_async
     def update_status(self):

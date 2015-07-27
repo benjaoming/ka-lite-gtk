@@ -23,7 +23,8 @@ Features
 --------
 
 * Control the KA Lite server from a simple Control Panel
-* Supports a multi-user environment, i.e. User A controls User Bs server.
+* Supports a multi-user environment, i.e. User A controls User Bs server, provided User A has local sudo access.
+* Add and remove system services for automatically starting up KA Lite.
 * Notification area icon (TODO)
 
 
@@ -34,7 +35,7 @@ Run directly from source::
 
     python kalite_gtk --debug
 
-Installing in a as editable mode and running directly::
+Installing in editable mode and running directly::
 
     pip install -e .
     ka-lite-gtk --debug
